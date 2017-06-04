@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class CodesList extends AppCompatActivity {
-    ArrayList<CharSequence> items = new ArrayList<>();
+    ArrayList<String> items = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,7 @@ public class CodesList extends AppCompatActivity {
         final TextView editInput = (TextView) findViewById(R.id.inputItemText);
 
         ListView listView = (ListView) findViewById(R.id.barCodesListView);
-        final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, items);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, items);
         listView.setAdapter(adapter);
 
         addItemButton.setOnClickListener(new View.OnClickListener() {
@@ -31,7 +31,7 @@ public class CodesList extends AppCompatActivity {
             public void onClick(View v) {
                 CharSequence text = editInput.getText();
                 Log.i("INFO", "onClick: " + text);
-                items.add(text);
+                items.add(text.toString());
                 adapter.notifyDataSetChanged();
             }
         });
