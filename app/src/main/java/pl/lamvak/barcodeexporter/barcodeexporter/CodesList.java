@@ -1,9 +1,12 @@
 package pl.lamvak.barcodeexporter.barcodeexporter;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ExpandedMenuView;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -23,7 +26,7 @@ public class CodesList extends AppCompatActivity {
         final TextView editInput = (TextView) findViewById(R.id.inputItemText);
 
         ListView listView = (ListView) findViewById(R.id.barCodesListView);
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, items);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), R.layout.list_item, items);
         listView.setAdapter(adapter);
 
         addItemButton.setOnClickListener(new View.OnClickListener() {
@@ -33,6 +36,12 @@ public class CodesList extends AppCompatActivity {
                 Log.i("INFO", "onClick: " + text);
                 items.add(text.toString());
                 adapter.notifyDataSetChanged();
+            }
+        });
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startActivity(new Intent(CodesList.this, ShowBarcodeActivity.class));
             }
         });
     }
