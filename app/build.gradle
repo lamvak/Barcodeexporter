@@ -1,4 +1,15 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.1"
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 25
@@ -21,6 +32,35 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    sourceSets {
+        main {
+            proto {
+                srcDir 'src/main/proto'
+                include '**/*.proto'
+            }
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.0.0"
+    }
+    plugins {
+        lite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                lite { }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -29,4 +69,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.google.android.gms:play-services:10.2.6'
     compile 'com.github.bumptech.glide:glide:4.0.0-RC0'
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.3.1'
+    androidTestCompile 'com.android.support:support-annotations:25.3.1'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
 }
