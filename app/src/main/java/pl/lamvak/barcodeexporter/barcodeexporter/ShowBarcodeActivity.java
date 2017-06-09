@@ -1,5 +1,6 @@
 package pl.lamvak.barcodeexporter.barcodeexporter;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.util.SparseArray;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
@@ -54,10 +56,15 @@ public class ShowBarcodeActivity extends AppCompatActivity {
 
         final ImageView imageView = (ImageView) findViewById(R.id.imageView);
 
-
-        Glide.with(this)
-                .asBitmap()
-                .load(R.drawable.example_image_2)
+        RequestBuilder<Bitmap> bitmapRequestBuilder = Glide.with(this)
+                .asBitmap();
+        Intent intent = getIntent();
+        if (intent.hasExtra("FileName")) {
+            bitmapRequestBuilder.load(intent.getStringExtra("FileName"));
+        } else {
+            bitmapRequestBuilder.load(R.drawable.example_image_2);
+        }
+        bitmapRequestBuilder
                 .listener(new RequestListener<Bitmap>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
@@ -116,4 +123,5 @@ public class ShowBarcodeActivity extends AppCompatActivity {
                 })
                 .into(imageView);
     }
+
 }

@@ -1,12 +1,29 @@
 package pl.lamvak.barcodeexporter.barcodeexporter;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.NotificationBuilderWithBuilderAccessor;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class HomeActivity extends AppCompatActivity {
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private String mCurrentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +42,22 @@ public class HomeActivity extends AppCompatActivity {
         takeSnapshots.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this, CodesList.class));
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // Ensure that there's a camera activity to handle the intent
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    // Create the File where the photo should go
+                    try {
+                        File photoFile = createImageFile();
+                        Uri photoURI = FileProvider.getUriForFile(HomeActivity.this,
+                                "pl.lamvak.barcodeexporter.barcodeexporter", photoFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    throw new RuntimeException("Camera not available");
+                }
             }
         });
 
@@ -36,5 +68,37 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, CodesList.class));
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+//            Bundle extras = data.getExtras();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+//            mImageView.setImageBitmap(imageBitmap);
+            Notification notification = new NotificationCompat.Builder(this).setContentTitle("Scanned File")
+                    .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                    .setContentText(mCurrentPhotoPath).build();
+            ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
+        }
+        Intent intent = new Intent(this, ShowBarcodeActivity.class);
+        intent.putExtra("FileName", mCurrentPhotoPath);
+        startActivity(intent);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 }
