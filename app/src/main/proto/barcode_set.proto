@@ -5,7 +5,7 @@ package barcode_exporter;
 option java_package = "pl.lamvak.barcodeexporter.proto";
 option java_outer_classname = "BarcodeExporterProtos";
 
-message Barccode {
+message Barcode {
     required string code = 1;
     message Rectangle {
         required float top = 1;
