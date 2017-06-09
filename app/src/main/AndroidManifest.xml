@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pl.lamvak.barcodeexporter.barcodeexporter">
+    package="pl.lamvak.barcodeexporter">
 
     <application
+        android:name=".BarcodeExporterApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CodesList" android:label="Barcodes list">
+        <activity android:name="pl.lamvak.barcodeexporter.CodesList" android:label="Barcodes list">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".HomeActivity" android:label="Start BarcodeExporter">
+        <activity android:name="pl.lamvak.barcodeexporter.HomeActivity" android:label="Start BarcodeExporter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,7 +29,7 @@
         </activity>
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="pl.lamvak.barcodeexporter.barcodeexporter"
+            android:authorities="pl.lamvak.barcodeexporter"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

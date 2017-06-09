@@ -1,4 +1,4 @@
-package pl.lamvak.barcodeexporter.barcodeexporter;
+package pl.lamvak.barcodeexporter;
 
 import android.content.Intent;
 import android.graphics.Bitmap;

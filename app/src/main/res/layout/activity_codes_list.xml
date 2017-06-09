@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:visibility="visible"
-    tools:context="pl.lamvak.barcodeexporter.barcodeexporter.CodesList"
+    tools:context="pl.lamvak.barcodeexporter.CodesList"
     android:layout_weight="1">
 
     <EditText

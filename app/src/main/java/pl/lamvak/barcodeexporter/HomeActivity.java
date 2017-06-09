@@ -1,4 +1,4 @@
-package pl.lamvak.barcodeexporter.barcodeexporter;
+package pl.lamvak.barcodeexporter;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.app.NotificationBuilderWithBuilderAccessor;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,13 +19,22 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjection;
+import pl.lamvak.barcodeexporter.store.DataStore;
+
 public class HomeActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private String mCurrentPhotoPath;
 
+    @Inject
+    DataStore dataStore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -49,7 +57,7 @@ public class HomeActivity extends AppCompatActivity {
                     try {
                         File photoFile = createImageFile();
                         Uri photoURI = FileProvider.getUriForFile(HomeActivity.this,
-                                "pl.lamvak.barcodeexporter.barcodeexporter", photoFile);
+                                "pl.lamvak.barcodeexporter", photoFile);
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     } catch (IOException ex) {
@@ -73,12 +81,9 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-//            mImageView.setImageBitmap(imageBitmap);
             Notification notification = new NotificationCompat.Builder(this).setContentTitle("Scanned File")
                     .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                    .setContentText(mCurrentPhotoPath).build();
+                    .setContentText(dataStore.foo() + ">" + mCurrentPhotoPath).build();
             ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
         }
         Intent intent = new Intent(this, ShowBarcodeActivity.class);
