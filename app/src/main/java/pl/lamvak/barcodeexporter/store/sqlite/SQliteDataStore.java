@@ -4,13 +4,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Rect;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import pl.lamvak.barcodeexporter.data.BarcodeMeta;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode.Rectangle;
 import pl.lamvak.barcodeexporter.store.DataStore;
 
 import static pl.lamvak.barcodeexporter.store.sqlite.SQliteConstants.BarcodeMetaFieldNames.BOTTOM;
@@ -34,13 +36,37 @@ public class SQliteDataStore implements DataStore {
     }
 
     @Override
-    public ArrayList<BarcodeMeta> loadAllBarcodes() {
-        ArrayList<BarcodeMeta> barcodes = new ArrayList<>();
+    public List<Barcode> loadAllBarcodes() {
+        ArrayList<Barcode> barcodes = new ArrayList<>();
         Cursor barcodesCursor = database.query(BARCODE_META.name(), barcodeColumns, null, null, null, null, null, null);
         while (barcodesCursor.moveToNext()) {
-            barcodes.add(barcodeFromDBCursor(barcodesCursor));
+            barcodes.add(barcodeProtoFromDBCursor(barcodesCursor));
         }
         return barcodes;
+    }
+
+    @Override
+    public ArrayList<Barcode> loadAllBarcodeMeta() {
+        ArrayList<Barcode> barcodes = new ArrayList<>();
+        Cursor barcodesCursor = database.query(BARCODE_META.name(), barcodeColumns, null, null, null, null, null, null);
+        while (barcodesCursor.moveToNext()) {
+            barcodes.add(barcodeProtoFromDBCursor(barcodesCursor));
+        }
+        return barcodes;
+    }
+
+    private Barcode barcodeProtoFromDBCursor(Cursor barcodesCursor) {
+        return Barcode.newBuilder()
+                .setCode(stringOf(barcodesCursor, CODE))
+                .setSourceImageRef(stringOf(barcodesCursor, SOURCE_IMG_REF))
+                .setCreationTimestamp(intOf(barcodesCursor, CREATION_TIMESTAMP))
+                .setBox(Rectangle.newBuilder()
+                        .setLeft(intOf(barcodesCursor, LEFT))
+                        .setRight(intOf(barcodesCursor, RIGHT))
+                        .setTop(intOf(barcodesCursor, TOP))
+                        .setBottom(intOf(barcodesCursor, BOTTOM))
+                        )
+                .build();
     }
 
     private String stringOf(Cursor cursor, Enum<?> fieldName) {
@@ -55,26 +81,14 @@ public class SQliteDataStore implements DataStore {
         return cursor.getColumnIndex(fieldName.name());
     }
 
-    private BarcodeMeta barcodeFromDBCursor(Cursor barcodesCursor) {
-        return new BarcodeMeta(
-                stringOf(barcodesCursor, CODE),
-                new Rect(intOf(barcodesCursor, LEFT),
-                        intOf(barcodesCursor, TOP),
-                        intOf(barcodesCursor, RIGHT),
-                        intOf(barcodesCursor, BOTTOM)),
-                stringOf(barcodesCursor, SOURCE_IMG_REF),
-                intOf(barcodesCursor, CREATION_TIMESTAMP)
-        );
-    }
-
     @Override
-    public void insertOrUpdate(BarcodeMeta barcode) {
+    public void insertOrUpdate(Barcode barcode) {
         ContentValues metaData = new ContentValues();
         metaData.put(CODE.name(), barcode.getCode());
-        metaData.put(LEFT.name(), barcode.getBox().left);
-        metaData.put(TOP.name(), barcode.getBox().top);
-        metaData.put(RIGHT.name(), barcode.getBox().right);
-        metaData.put(BOTTOM.name(), barcode.getBox().bottom);
+        metaData.put(LEFT.name(), barcode.getBox().getLeft());
+        metaData.put(TOP.name(), barcode.getBox().getTop());
+        metaData.put(RIGHT.name(), barcode.getBox().getRight());
+        metaData.put(BOTTOM.name(), barcode.getBox().getBottom());
         metaData.put(SOURCE_IMG_REF.name(), barcode.getSourceImageRef());
         metaData.put(CREATION_TIMESTAMP.name(), barcode.getCreationTimestamp());
         database.insertWithOnConflict(BARCODE_META.name(), null,
@@ -85,8 +99,8 @@ public class SQliteDataStore implements DataStore {
     @Override
     public HashSet<String> loadAllSourceImagesReferences() {
         HashSet<String> references = new HashSet<>();
-        List<BarcodeMeta> barcodeMetas = loadAllBarcodes();
-        for (BarcodeMeta meta : barcodeMetas) {
+        List<Barcode> barcodeMetas = loadAllBarcodes();
+        for (Barcode meta : barcodeMetas) {
             references.add(meta.getSourceImageRef());
         }
         return references;
@@ -95,23 +109,23 @@ public class SQliteDataStore implements DataStore {
     @Override
     public ArrayList<String> loadAllCodes() {
         ArrayList<String> codes = new ArrayList<>();
-        for (BarcodeMeta meta : loadAllBarcodes()) {
+        for (Barcode meta : loadAllBarcodes()) {
             codes.add(meta.getCode());
         }
         return codes;
     }
 
     @Override
-    public BarcodeMeta loadBarcodeWithCode(String barcodeCode) {
+    public Barcode loadBarcodeWithCode(String barcodeCode) {
         Cursor barcodesCursor = database.query(BARCODE_META.name(), barcodeColumns, CODE.name() + " = ?", new String[]{barcodeCode}, null, null, null, null);
         if (!barcodesCursor.moveToNext()) {
             return null;
         }
-        BarcodeMeta meta = barcodeFromDBCursor(barcodesCursor);
+        Barcode barcode = barcodeProtoFromDBCursor(barcodesCursor);
         if (barcodesCursor.moveToNext()) {
             throw new RuntimeException("Non-unique barcode code: " + barcodeCode);
         }
-        return meta;
+        return barcode;
     }
 
 }

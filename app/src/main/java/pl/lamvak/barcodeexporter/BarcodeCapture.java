@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.icu.util.TimeZone;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,11 +25,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.FutureTarget;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
@@ -47,7 +42,8 @@ import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
-import pl.lamvak.barcodeexporter.data.BarcodeMeta;
+import pl.lamvak.barcodeexporter.data.Conversions;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos;
 import pl.lamvak.barcodeexporter.store.DataStore;
 
 import static com.google.android.gms.vision.barcode.Barcode.CALENDAR_EVENT;
@@ -164,7 +160,7 @@ public class BarcodeCapture extends AppCompatActivity {
         }
         for (int i = 0; i < barcodes.size(); i++) {
             Barcode barcode = barcodes.get(barcodes.keyAt(i));
-            BarcodeMeta meta = BarcodeMeta.from(barcode, mCurrentPhotoPath,
+            BarcodeExporterProtos.Barcode meta = Conversions.from(barcode, mCurrentPhotoPath,
                     (int) (DateTime.now(DateTimeZone.UTC).getMillis() / 86400000));
             dataStore.insertOrUpdate(meta);
         }

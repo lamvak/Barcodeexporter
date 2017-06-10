@@ -10,29 +10,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.FutureTarget;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
-import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
-
-import java.util.concurrent.ExecutionException;
-
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
-import pl.lamvak.barcodeexporter.data.BarcodeMeta;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
 import pl.lamvak.barcodeexporter.store.DataStore;
 
 public class ShowBarcodeActivity extends AppCompatActivity {
@@ -56,11 +43,11 @@ public class ShowBarcodeActivity extends AppCompatActivity {
             throw new RuntimeException("Missing extra `Code` for ShowBarcodeActivity");
         }
 
-        final BarcodeMeta barcodeMeta = dataStore.loadBarcodeWithCode(barcodeCode);
+        final Barcode barcode = dataStore.loadBarcodeWithCode(barcodeCode);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
-        Bitmap srcBitmap = BitmapFactory.decodeFile(barcodeMeta.getSourceImageRef(), options);
+        Bitmap srcBitmap = BitmapFactory.decodeFile(barcode.getSourceImageRef(), options);
         Paint paint = new Paint();
         paint.setColor(Color.RED);
         paint.setStrokeWidth(19f);
@@ -68,7 +55,8 @@ public class ShowBarcodeActivity extends AppCompatActivity {
         paint.setStyle(Paint.Style.FILL);
         Canvas canvas = new Canvas(srcBitmap);
 
-        Rect rect = barcodeMeta.getBox();
+        Rect rect = new Rect((int)(barcode.getBox().getLeft()), (int)(barcode.getBox().getTop()),
+                (int)(barcode.getBox().getRight()), (int)(barcode.getBox().getBottom()));
         canvas.drawRect(rect, paint);
 
         int sizeMax = Math.max(srcBitmap.getWidth(), srcBitmap.getHeight());

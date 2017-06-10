@@ -2,13 +2,15 @@ package pl.lamvak.barcodeexporter.store;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
-import pl.lamvak.barcodeexporter.data.BarcodeMeta;
+import static pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
 
 public interface DataStore {
-    ArrayList<BarcodeMeta> loadAllBarcodes();
-    void insertOrUpdate(BarcodeMeta barcode);
+    List<Barcode> loadAllBarcodes();
+    ArrayList<Barcode> loadAllBarcodeMeta();
+    void insertOrUpdate(Barcode barcode);
     HashSet<String> loadAllSourceImagesReferences();
     ArrayList<String> loadAllCodes();
-    BarcodeMeta loadBarcodeWithCode(String barcodeCode);
+    Barcode loadBarcodeWithCode(String barcodeCode);
 }

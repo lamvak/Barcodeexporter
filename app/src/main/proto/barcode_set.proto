@@ -8,10 +8,10 @@ option java_outer_classname = "BarcodeExporterProtos";
 message Barcode {
     required string code = 1;
     message Rectangle {
-        required float top = 1;
-        required float left = 2;
-        required float bottom = 3;
-        required float right = 4;
+        required int64 top = 1;
+        required int64 left = 2;
+        required int64 bottom = 3;
+        required int64 right = 4;
     }
     required Rectangle box = 2;
     required string source_image_ref = 3;
