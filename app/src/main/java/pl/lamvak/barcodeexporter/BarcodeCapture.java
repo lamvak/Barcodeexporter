@@ -240,64 +240,6 @@ public class BarcodeCapture extends AppCompatActivity {
         }
     }
 
-    protected void foo(int requestCode, int resultCode, Intent data) {
-        Log.i("INFO", "BarcodeCapture: onActivityResult("
-                + requestCode + ", " + resultCode + ")");
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Notification notification = new NotificationCompat.Builder(this).setContentTitle("Scanned File")
-                    .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                    .setContentText(mCurrentPhotoPath).build();
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
-
-            Log.i("INFO", "BarcodeCapture: loading image");
-            FutureTarget<Bitmap> bitmap = Glide.with(this).asBitmap()
-                    .load(mCurrentPhotoPath)
-                    .submit();
-
-            try {
-                Bitmap copy = Bitmap.createBitmap(bitmap.get());
-                BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
-                        .setBarcodeFormats(supportedFormats).build();
-
-                Frame frame = new Frame.Builder()
-                        .setBitmap(copy).build();
-
-                barcodes = barcodeDetector.detect(frame);
-
-                Paint paint = new Paint();
-                paint.setColor(Color.RED);
-                paint.setStrokeWidth(19f);
-                paint.setAlpha(100);
-                paint.setStyle(Paint.Style.FILL);
-                Canvas canvas = new Canvas(copy);
-
-                if (barcodes.size() > 0) {
-                    for (int i = 0; i < barcodes.size(); i++) {
-                        Barcode barcode = barcodes.get(barcodes.keyAt(i));
-                        Rect rect = barcode.getBoundingBox();
-                        canvas.drawRect(rect, paint);
-                    }
-                }
-
-                imageView.setImageBitmap(copy);
-            } catch (InterruptedException e) {
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-            Log.i("INFO", "BarcodeCapture: image loaded");
-        }
-        else {
-            if (requestCode != REQUEST_IMAGE_CAPTURE) {
-                notifyAboutMissingCode("Unknown request returned");
-            }
-            else {
-                notifyAboutMissingCode("Capture cancelled with code " + resultCode);
-            }
-            finish();
-        }
-    }
-
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
