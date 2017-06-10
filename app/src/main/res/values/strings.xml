@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Bar code exporter</string>
+
+    <string name="title_activity_barcode_capture">Capture barcodes</string>
+    <string name="retry">Retry</string>
+    <string name="save_and_next">Save&amp;Next</string>
+    <string name="cancel">Cancel</string>
 </resources>

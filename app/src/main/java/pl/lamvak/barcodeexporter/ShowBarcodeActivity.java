@@ -1,127 +1,90 @@
 package pl.lamvak.barcodeexporter;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.util.SparseArray;
+import android.support.v7.app.NotificationCompat;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
-import static com.google.android.gms.vision.barcode.Barcode.CALENDAR_EVENT;
-import static com.google.android.gms.vision.barcode.Barcode.CODABAR;
-import static com.google.android.gms.vision.barcode.Barcode.CODE_128;
-import static com.google.android.gms.vision.barcode.Barcode.CODE_39;
-import static com.google.android.gms.vision.barcode.Barcode.CODE_93;
-import static com.google.android.gms.vision.barcode.Barcode.CONTACT_INFO;
-import static com.google.android.gms.vision.barcode.Barcode.DATA_MATRIX;
-import static com.google.android.gms.vision.barcode.Barcode.DRIVER_LICENSE;
-import static com.google.android.gms.vision.barcode.Barcode.EAN_13;
-import static com.google.android.gms.vision.barcode.Barcode.EAN_8;
-import static com.google.android.gms.vision.barcode.Barcode.EMAIL;
-import static com.google.android.gms.vision.barcode.Barcode.GEO;
-import static com.google.android.gms.vision.barcode.Barcode.ISBN;
-import static com.google.android.gms.vision.barcode.Barcode.ITF;
-import static com.google.android.gms.vision.barcode.Barcode.PDF417;
-import static com.google.android.gms.vision.barcode.Barcode.PHONE;
-import static com.google.android.gms.vision.barcode.Barcode.PRODUCT;
-import static com.google.android.gms.vision.barcode.Barcode.QR_CODE;
-import static com.google.android.gms.vision.barcode.Barcode.SMS;
-import static com.google.android.gms.vision.barcode.Barcode.TEXT;
-import static com.google.android.gms.vision.barcode.Barcode.UPC_A;
-import static com.google.android.gms.vision.barcode.Barcode.UPC_E;
-import static com.google.android.gms.vision.barcode.Barcode.URL;
-import static com.google.android.gms.vision.barcode.Barcode.WIFI;
+import java.util.concurrent.ExecutionException;
+
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjection;
+import pl.lamvak.barcodeexporter.data.BarcodeMeta;
+import pl.lamvak.barcodeexporter.store.DataStore;
 
 public class ShowBarcodeActivity extends AppCompatActivity {
+    private ImageView imageView;
+
+    @Inject
+    DataStore dataStore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_barcode);
 
-        final ImageView imageView = (ImageView) findViewById(R.id.imageView);
+        imageView = (ImageView) findViewById(R.id.imageView);
 
-        RequestBuilder<Bitmap> bitmapRequestBuilder = Glide.with(this)
-                .asBitmap();
         Intent intent = getIntent();
-        if (intent.hasExtra("FileName")) {
-            bitmapRequestBuilder.load(intent.getStringExtra("FileName"));
-        } else {
-            bitmapRequestBuilder.load(R.drawable.example_image_2);
+        final String barcodeCode = intent.getStringExtra("Code");
+        if (barcodeCode == null || barcodeCode.isEmpty()) {
+            notifyAboutMissingCode("Can't show barcode -- missing code ID");
+            throw new RuntimeException("Missing extra `Code` for ShowBarcodeActivity");
         }
-        bitmapRequestBuilder
-                .listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        return false;
-                    }
 
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(getApplicationContext())
-                                .setBarcodeFormats(
-                                    CODE_128 |
-                                    CODE_39 |
-                                    CODE_93 |
-                                    CODABAR |
-                                    DATA_MATRIX |
-                                    EAN_13 |
-                                    EAN_8 |
-                                    ITF |
-                                    QR_CODE |
-                                    UPC_A |
-                                    UPC_E |
-                                    PDF417 |
-                                    CONTACT_INFO |
-                                    EMAIL |
-                                    ISBN |
-                                    PHONE |
-                                    PRODUCT |
-                                    SMS |
-                                    TEXT |
-                                    URL |
-                                    WIFI |
-                                    GEO |
-                                    CALENDAR_EVENT |
-                                    DRIVER_LICENSE
-                        ).build();
-                        Log.i("INFO", "BarcodeDetector is operational: " + barcodeDetector.isOperational());
+        final BarcodeMeta barcodeMeta = dataStore.loadBarcodeWithCode(barcodeCode);
 
-                        Frame frame = new Frame.Builder()
-                                .setBitmap(resource).build();
-                        SparseArray<Barcode> barcodes = barcodeDetector.detect(frame);
-                        Log.i("INFO", "number of barcodes: " + barcodes.size());
-                        if (barcodes.size() > 0) {
-                            Barcode barcode = barcodes.get(barcodes.keyAt(0));
-                            Log.i("INFO", "Marking barcode " + barcode.rawValue);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        Bitmap srcBitmap = BitmapFactory.decodeFile(barcodeMeta.getSourceImageRef(), options);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(19f);
+        paint.setAlpha(100);
+        paint.setStyle(Paint.Style.FILL);
+        Canvas canvas = new Canvas(srcBitmap);
 
-                            Canvas canvas = new Canvas(resource);
-                            Rect rect = barcode.getBoundingBox();
-                            Paint paint = new Paint();
-                            paint.setColor(Color.RED);
-                            paint.setStrokeWidth(19f);
-                            paint.setStyle(Paint.Style.STROKE);
-                            canvas.drawRect(rect, paint);
-                        }
-                        return false;
-                    }
-                })
-                .into(imageView);
+        Rect rect = barcodeMeta.getBox();
+        canvas.drawRect(rect, paint);
+
+        int sizeMax = Math.max(srcBitmap.getWidth(), srcBitmap.getHeight());
+        float scale = 1;
+        if (sizeMax > 4096) {
+            scale = 4096f / sizeMax;
+        }
+        final Bitmap copy = Bitmap.createScaledBitmap(srcBitmap, (int)(srcBitmap.getWidth() * scale), (int)(srcBitmap.getHeight() * scale), true);
+        ShowBarcodeActivity.this.imageView.setImageBitmap(copy);
+    }
+
+    private void notifyAboutMissingCode(String message) {
+        Notification notification = new NotificationCompat.Builder(this).setContentTitle("Error in BarcodeExporterGlideModule")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setContentText(message).build();
+        ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
     }
 
 }

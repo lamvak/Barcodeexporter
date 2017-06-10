@@ -16,7 +16,9 @@ public class BarcodeExporterApplication extends Application implements HasActivi
     @Override
     public void onCreate() {
         super.onCreate();
-        DaggerBarcodeExporterApplicationComponent.create().inject(this);
+        DaggerBarcodeExporterApplicationComponent.builder()
+                .applicationModule(new ApplicationModule(this))
+                .build().inject(this);
     }
 
     @Override
