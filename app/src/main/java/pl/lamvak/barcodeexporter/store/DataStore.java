@@ -1,5 +1,7 @@
 package pl.lamvak.barcodeexporter.store;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,4 +15,5 @@ public interface DataStore {
     HashSet<String> loadAllSourceImagesReferences();
     ArrayList<String> loadAllCodes();
     Barcode loadBarcodeWithCode(String barcodeCode);
+    void exportAllBarcodesToStream(OutputStream stream) throws IOException;
 }

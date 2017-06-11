@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -126,6 +128,14 @@ public class SQliteDataStore implements DataStore {
             throw new RuntimeException("Non-unique barcode code: " + barcodeCode);
         }
         return barcode;
+    }
+
+    @Override
+    public void exportAllBarcodesToStream(OutputStream stream) throws IOException {
+        List<Barcode> barcodes = loadAllBarcodes();
+        for (Barcode barcode : barcodes) {
+            barcode.writeDelimitedTo(stream);
+        }
     }
 
 }
