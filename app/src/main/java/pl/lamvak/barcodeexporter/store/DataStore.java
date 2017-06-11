@@ -10,7 +10,6 @@ import static pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
 
 public interface DataStore {
     List<Barcode> loadAllBarcodes();
-    ArrayList<Barcode> loadAllBarcodeMeta();
     void insertOrUpdate(Barcode barcode);
     HashSet<String> loadAllSourceImagesReferences();
     ArrayList<String> loadAllCodes();

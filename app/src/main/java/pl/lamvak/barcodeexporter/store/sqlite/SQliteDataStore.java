@@ -45,16 +45,6 @@ public class SQliteDataStore implements DataStore {
         return barcodes;
     }
 
-    @Override
-    public ArrayList<Barcode> loadAllBarcodeMeta() {
-        ArrayList<Barcode> barcodes = new ArrayList<>();
-        Cursor barcodesCursor = database.query(BARCODE_META.name(), barcodeColumns, null, null, null, null, null, null);
-        while (barcodesCursor.moveToNext()) {
-            barcodes.add(barcodeProtoFromDBCursor(barcodesCursor));
-        }
-        return barcodes;
-    }
-
     private Barcode barcodeProtoFromDBCursor(Cursor barcodesCursor) {
         return Barcode.newBuilder()
                 .setCode(stringOf(barcodesCursor, CODE))
