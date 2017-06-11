@@ -24,8 +24,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.FutureTarget;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
@@ -37,7 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -258,7 +255,7 @@ public class BarcodeCapture extends AppCompatActivity {
 
 
     private void notifyAboutMissingCode(String message) {
-        Notification notification = new NotificationCompat.Builder(this).setContentTitle("Error in BarcodeExporterGlideModule")
+        Notification notification = new NotificationCompat.Builder(this).setContentTitle("Error in Barcode capture")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentText(message).build();
         ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);

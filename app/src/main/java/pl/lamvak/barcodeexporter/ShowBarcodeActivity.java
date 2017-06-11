@@ -69,7 +69,7 @@ public class ShowBarcodeActivity extends AppCompatActivity {
     }
 
     private void notifyAboutMissingCode(String message) {
-        Notification notification = new NotificationCompat.Builder(this).setContentTitle("Error in BarcodeExporterGlideModule")
+        Notification notification = new NotificationCompat.Builder(this).setContentTitle("Error in Barcode loading")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentText(message).build();
         ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(0, notification);
