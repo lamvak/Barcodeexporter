@@ -213,7 +213,13 @@ public class BarcodeCapture extends AppCompatActivity {
                     for (int i = 0; i < barcodes.size(); i++) {
                         Barcode barcode = barcodes.get(barcodes.keyAt(i));
                         Rect rect = barcode.getBoundingBox();
-                        canvas.drawRect(rect, paint);
+                        if (rect.bottom - rect.top < 20
+                                || rect.right - rect.left < 20 ) {
+                            barcodes.removeAt(i);
+                            i--;
+                        } else {
+                            canvas.drawRect(rect, paint);
+                        }
                     }
                 }
 

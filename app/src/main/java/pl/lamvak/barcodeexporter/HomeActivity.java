@@ -28,7 +28,6 @@ import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
-import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos;
 import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
 import pl.lamvak.barcodeexporter.store.DataStore;
 
