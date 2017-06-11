@@ -24,4 +24,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Export codes" />
+
+    <Button
+        android:id="@+id/cleanupData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cleanup data" />
 </LinearLayout>

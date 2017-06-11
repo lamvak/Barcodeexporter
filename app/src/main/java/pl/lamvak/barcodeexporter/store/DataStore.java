@@ -15,4 +15,6 @@ public interface DataStore {
     ArrayList<String> loadAllCodes();
     Barcode loadBarcodeWithCode(String barcodeCode);
     void exportAllBarcodesToStream(OutputStream stream) throws IOException;
+
+    void removeBarcode(String code);
 }

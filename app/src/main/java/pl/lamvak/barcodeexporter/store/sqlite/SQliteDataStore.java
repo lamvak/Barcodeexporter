@@ -126,4 +126,9 @@ public class SQliteDataStore implements DataStore {
         }
     }
 
+    @Override
+    public void removeBarcode(String code) {
+        database.delete(BARCODE_META.name(), CODE.name() + " = ?", new String[]{code});
+    }
+
 }

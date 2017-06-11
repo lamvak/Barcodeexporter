@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -16,12 +20,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos;
+import pl.lamvak.barcodeexporter.proto.BarcodeExporterProtos.Barcode;
 import pl.lamvak.barcodeexporter.store.DataStore;
 
 public class HomeActivity extends AppCompatActivity {
@@ -92,6 +100,42 @@ public class HomeActivity extends AppCompatActivity {
                     zipOutputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            }
+        });
+
+        Button cleanupButton = (Button) findViewById(R.id.cleanupData);
+        cleanupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int today = (int) (DateTime.now(DateTimeZone.UTC).getMillis() / 86400000);
+                Log.i("INFO", "Cleaning up data; today: " + today);
+                int cleanupThreshold = today - 30;
+                Log.i("INFO", "cleanupThreshold " + cleanupThreshold);
+                List<Barcode> barcodes = dataStore.loadAllBarcodes();
+                for (Barcode barcode : barcodes) {
+                    long creationTimestamp = barcode.getCreationTimestamp();
+                    if (creationTimestamp <= cleanupThreshold) {
+                        Log.i("INFO", "removing barcode with timestamp " + creationTimestamp + " (cleanupThreshold = " + cleanupThreshold + ")");
+                        dataStore.removeBarcode(barcode.getCode());
+                    }
+                    else {
+                        Log.i("INFO", "retaining barcode with timestamp " + creationTimestamp + " (cleanupThreshold = " + cleanupThreshold + ")");
+                    }
+                }
+
+                HashSet<String> imageReferences = dataStore.loadAllSourceImagesReferences();
+                File imgsDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                File[] images = imgsDir.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.getName().endsWith(".jpg");
+                    }
+                });
+                for (File image : images) {
+                    if (!imageReferences.contains(image.getAbsolutePath())) {
+                        image.delete();
+                    }
                 }
             }
         });
